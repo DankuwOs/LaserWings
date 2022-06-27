@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Linq.Expressions;
+using Harmony;
 using UnityEngine;
+using VTNetworking;
 using VTOLVR.Multiplayer;
 
 public class WingsTouch : MonoBehaviour
@@ -36,7 +38,7 @@ public class WingsTouch : MonoBehaviour
         
         var hit = Physics.SphereCastAll(ray, radius, maxDist);
 
-        if (hit.Length == 0 || hit == null) return;
+        if (hit.Length == 0) return;
         
         foreach (var h in hit)
         {
@@ -49,10 +51,28 @@ public class WingsTouch : MonoBehaviour
                 
             var distance = h.distance;
             var damageCalc = damage * curve.Evaluate(distance / maxDist);
+            
+            if (damageCalc < health.minDamage) continue;
+            
+            
                 
             Debug.Log("Dealing damage: " + damageCalc + " to " + hitbox.health.actor.name);
-                
+            
+            if (damageCalc >= health.currentHealth )
+                AddCredit(health.actor);
+
+            if (VTOLMPSceneManager.instance.isNetInitialized)
+            {
+                health.Damage(damageCalc, health.transform.position, Health.DamageTypes.Impact, _actor, sourcePlayer: VTOLMPSceneManager.instance.localPlayer);
+            }
             health.Damage(damageCalc, health.transform.position, Health.DamageTypes.Impact, _actor);
+            
+            
         }
+        
+    }
+    private void AddCredit(Actor actor)
+    {
+        VTOLMPSceneManager.instance.GiveKillCredit(VTOLMPSceneManager.instance.localPlayer, actor);
     }
 }

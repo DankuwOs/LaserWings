@@ -1,18 +1,32 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class HPEquipLaserWings : HPEquippable, IMassObject
 {
     // Yoinked from Tempyz78 :~)
     
-    private bool fire;
-    public ParticleSystem[] ParticleSystems;
-    public WingsTouch[] Touchies;
+    
+    
+    public GetTeam getTeam;
+    
+    public ParticleSystem[] bluForParticles;
+    public ParticleSystem[] opForParticles;
+
+    public WingsTouch[] bluForWings;
+    public WingsTouch[] opForWings;
+    
     public AudioSource source;
     public bool ActiveOnStart = false;
     
     public BoolEvent firedEvent = new BoolEvent();
-
+    
+    private ParticleSystem[] _particleSystems;
+    private WingsTouch[] _touchies;
+    
+    private bool fire;
+    private WeaponManager _wm;
+    
     public HPEquipLaserWings()
     {
         fullName = "LASER TWO: ELECTRIC BOOGY BOOGY";
@@ -27,19 +41,43 @@ public class HPEquipLaserWings : HPEquippable, IMassObject
         baseRadarCrossSection = 0f;
     }
 
-    public void Awake()
+    protected override void OnEquip()
     {
+        _wm = weaponManager;
+        
+        switch (getTeam.GetMyTeam())
+        {
+            case "Allied":
+                _particleSystems = bluForParticles;
+                _touchies = bluForWings;
+                Debug.Log("Player is Allied");
+                break;
+            case "Enemy":
+                _particleSystems = opForParticles;
+                _touchies = opForWings;
+                Debug.Log("Player is Enemy");
+                break;
+            
+            default:
+            Debug.Log("Error: Team not found.");
+            _particleSystems = opForParticles;
+            _touchies = opForWings;
+                break;
+        }
+
+        
+        
         if (!ActiveOnStart)
         {
             if (SceneManager.GetActiveScene().name != VTOLScenes.VehicleConfiguration.ToString())
             {
-                foreach (ParticleSystem ps in ParticleSystems)
+                foreach (ParticleSystem ps in _particleSystems)
                 {
                     ps.Stop();
                 }
             }
 
-            foreach (WingsTouch c in Touchies)
+            foreach (WingsTouch c in _touchies)
             {
                 c.enabled = false;
             }
@@ -60,12 +98,12 @@ public class HPEquipLaserWings : HPEquippable, IMassObject
     {
         base.OnStartFire();
         fire = true;
-        foreach (ParticleSystem ps in ParticleSystems)
+        foreach (ParticleSystem ps in _particleSystems)
         {
             ps.Play();
         }
 
-        foreach (WingsTouch c in Touchies)
+        foreach (WingsTouch c in _touchies)
         {
             c.enabled = true;
         }
@@ -79,12 +117,12 @@ public class HPEquipLaserWings : HPEquippable, IMassObject
         base.OnStopFire();
         fire = false;
 
-        foreach (ParticleSystem ps in ParticleSystems)
+        foreach (ParticleSystem ps in _particleSystems)
         {
             ps.Stop();
         }
 
-        foreach (WingsTouch c in Touchies)
+        foreach (WingsTouch c in _touchies)
         {
             c.enabled = false;
         }

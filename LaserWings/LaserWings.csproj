@@ -76,6 +76,7 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WingsScripts\GetTeam.cs" />
     <Compile Include="WingsScripts\HPEquipLaserWings.cs" />
     <Compile Include="WingsScripts\WingsSync.cs" />
     <Compile Include="WingsScripts\WingsTouch.cs" />
